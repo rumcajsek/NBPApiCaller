@@ -14,17 +14,6 @@ public class ApiRestClient {
     private RestClient restClient = RestClient.create();
     private final String GENERIC_EXCHANGE_RATE_API_ADDRESS = "http://api.nbp.pl/api/exchangerates/rates/A/";
 
-    public ATableCurrencyObject getEuroCurrencyDataReturnATable() {
-        return restClient.get()
-                .uri(URI.create(GENERIC_EXCHANGE_RATE_API_ADDRESS + "EUR/"))
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, ((request, response) -> {
-                    throw new ApiRestCallException(response);
-                }))
-                .body(ATableCurrencyObject.class);
-    }
-
     public ATableCurrencyObject getAnyCurrencyDataReturnATable(String currencyCode) {
         return restClient.get()
                 .uri(URI.create(GENERIC_EXCHANGE_RATE_API_ADDRESS + currencyCode + "/"))

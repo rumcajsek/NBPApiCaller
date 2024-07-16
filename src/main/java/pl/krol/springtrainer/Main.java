@@ -8,7 +8,7 @@ import pl.krol.springtrainer.rest.ApiRestClient;
 public class Main {
     public static void main(String[] args) {
         ApiRestClient apiRestClient = new ApiRestClient();
-        ATableCurrencyObject euroStatus = apiRestClient.getEuroCurrencyDataReturnATable();
+        ATableCurrencyObject euroStatus = apiRestClient.getAnyCurrencyDataReturnATable("EUR");
         ATableCurrencyObject dollarStatus = apiRestClient.getAnyCurrencyDataReturnATable("USD");
         System.out.println(euroStatus);
         System.out.println(dollarStatus);
