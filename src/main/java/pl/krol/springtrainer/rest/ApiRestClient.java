@@ -1,5 +1,6 @@
 package pl.krol.springtrainer.rest;
 
+import pl.krol.springtrainer.exceptions.ApiRestCallException;
 import pl.krol.springtrainer.objects.ATableCurrencyObject;
 import lombok.Data;
 import org.springframework.http.HttpStatusCode;
@@ -16,12 +17,11 @@ public class ApiRestClient {
 
     public ATableCurrencyObject getEuroCurrencyDataReturnATable() {
         return restClient.get()
-                .uri(URI.create(GENERIC_API_ADDRESS + "EUR/today/"))
+                .uri(URI.create(GENERIC_API_ADDRESS + "EUR/"))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, ((request, response) -> {
-                    System.out.println("EUR call for today response: " + response.getStatusCode() + " " + response.getStatusText());
-
+                    throw new ApiRestCallException(response);
                 }))
                 .body(ATableCurrencyObject.class);
     }
@@ -32,7 +32,7 @@ public class ApiRestClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, ((request, response) -> {
-                    throw new RestClientException("Cannot get your goddamn " + currencyCode + " data!");
+                    throw new ApiRestCallException(response);
                 }))
                 .body(ATableCurrencyObject.class);
     }
