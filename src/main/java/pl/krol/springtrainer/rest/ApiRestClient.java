@@ -32,6 +32,10 @@ public class ApiRestClient {
         }
     }).create();
 
+    public URI glueURIparams(SingleCurrencyParameters params) throws UnallowedFieldValueException, IllegalAccessException {
+        return generateURI(params);
+    }
+
     public ATableCurrencyObject getAnyCurrencyDataReturnATable(String currencyCode) {
         return restClient.get()
                 .uri(URI.create(GENERIC_EXCHANGE_RATE_API_ADDRESS + "A/" + currencyCode + "/"))

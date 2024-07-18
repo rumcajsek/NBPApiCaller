@@ -16,8 +16,8 @@ public class Main {
         ATableCurrencyObject dollarStatus = apiRestClient.getAnyCurrencyDataReturnATable("USD");
         List<ATableAllCurrenciesObject> allCurrencies = apiRestClient.getAllCurrenciesDataReturnATable();
         SingleCurrencyParameters params = new SingleCurrencyParameters.Builder()
-                .table("A")
                 .code("EUR")
+                .lastOrToday("last")
                 .topCount(3L)
                 .startDate(LocalDate.of(2024,1,1))
                 .endDate(LocalDate.of(2024,5,31))
