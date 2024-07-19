@@ -1,6 +1,8 @@
-package pl.krol.springtrainer.annotations;
+package pl.krol.springtrainer.validation;
 
 import jakarta.annotation.Nullable;
+import pl.krol.springtrainer.annotations.AllowedValues;
+import pl.krol.springtrainer.annotations.CurrencyCode;
 import pl.krol.springtrainer.exceptions.UnallowedFieldValueException;
 import pl.krol.springtrainer.exceptions.UnallowedNullFieldException;
 import pl.krol.springtrainer.objects.CurrencyCodes;

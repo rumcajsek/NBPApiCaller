@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class ATableAllCurrenciesObject {
+public class ATableAllCurrenciesTableObject {
     private String table;
     private String no;
     private LocalDate effectiveDate;

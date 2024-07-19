@@ -3,15 +3,17 @@ package rest;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import pl.krol.springtrainer.exceptions.RateListRequestedButCountIsNullException;
 import pl.krol.springtrainer.exceptions.UnallowedFieldValueException;
 import pl.krol.springtrainer.exceptions.UnallowedNullFieldException;
 import pl.krol.springtrainer.objects.SingleCurrencyParameters;
 import pl.krol.springtrainer.rest.ApiRestClient;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.net.URI;
 import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class ApiRestCallTest {
 
@@ -99,5 +101,84 @@ public class ApiRestCallTest {
                 .isThrownBy(() -> apiRestClient.glueURIparams(params))
                 .withMessage("Field 'code' contains unallowed values.")
                 .withNoCause();
+    }
+
+    @Test
+    public void testAPIAddressBuilderWithWrongLastOrToday() {
+        // given
+        SingleCurrencyParameters params = new SingleCurrencyParameters.Builder()
+                .table("A")
+                .code("USD")
+                .lastOrToday("last_christmas_agavumaha")
+                .topCount(3L)
+                .startDate(LocalDate.of(2024, 1, 1))
+                .endDate(LocalDate.of(2024, 5, 31))
+                .build();
+
+        // when
+
+        // then // expect
+        assertThatExceptionOfType(UnallowedFieldValueException.class)
+                .isThrownBy(() -> apiRestClient.glueURIparams(params))
+                .withMessage("Field 'lastOrToday' contains unallowed values.")
+                .withNoCause();
+    }
+
+    @Test
+    public void testAPIAddressBuilderWithLastButNoTopCount() {
+        // given
+        SingleCurrencyParameters params = new SingleCurrencyParameters.Builder()
+                .table("A")
+                .code("USD")
+                .lastOrToday("last")
+                .startDate(LocalDate.of(2024, 1, 1))
+                .endDate(LocalDate.of(2024, 5, 31))
+                .build();
+
+        // when
+
+        // then // expect
+        assertThatExceptionOfType(RateListRequestedButCountIsNullException.class)
+                .isThrownBy(() -> apiRestClient.glueURIparams(params))
+                .withMessage("Parameter \"last\" chosen but \"topCount\" is null")
+                .withNoCause();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testAPIAddressBuilderWithAllCorrectParameters() {
+        // given
+        SingleCurrencyParameters params = new SingleCurrencyParameters.Builder()
+                .table("A")
+                .code("USD")
+                .startDate(LocalDate.of(2024, 1, 1))
+                .endDate(LocalDate.of(2024, 5, 31))
+                .build();
+
+        // when
+        URI testURI = apiRestClient.glueURIparams(params);
+
+        // then // expect
+        assertThat(testURI).isEqualTo(URI.create("http://api.nbp.pl/api/exchangerates/rates/A/USD/2024-01-01/2024-05-31/"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void testAPIAddressBuilderWithTodayParameterURIShouldNotHaveTopCountOrDates() {
+        // given
+        SingleCurrencyParameters params = new SingleCurrencyParameters.Builder()
+                .table("A")
+                .code("USD")
+                .lastOrToday("today")
+                .topCount(10L)
+                .startDate(LocalDate.of(2024, 1, 1))
+                .endDate(LocalDate.of(2024, 5, 31))
+                .build();
+
+        // when
+        URI testURI = apiRestClient.glueURIparams(params);
+
+        // then // expect
+        assertThat(testURI).isEqualTo(URI.create("http://api.nbp.pl/api/exchangerates/rates/A/USD/today/"));
     }
 }

@@ -5,7 +5,7 @@ import lombok.*;
 import java.util.List;
 
 @Data
-public class ATableCurrencyObject {
+public class ATableTableObject {
     private String table;
     private String currency;
     private String code;

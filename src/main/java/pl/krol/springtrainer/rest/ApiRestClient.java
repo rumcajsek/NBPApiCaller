@@ -6,13 +6,11 @@ import lombok.Data;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
-import pl.krol.springtrainer.annotations.ValueValidator;
+import pl.krol.springtrainer.validation.ValueValidator;
 import pl.krol.springtrainer.exceptions.ApiRestCallException;
 import pl.krol.springtrainer.exceptions.RateListRequestedButCountIsNullException;
 import pl.krol.springtrainer.exceptions.UnallowedFieldValueException;
-import pl.krol.springtrainer.objects.ATableAllCurrenciesObject;
-import pl.krol.springtrainer.objects.ATableCurrencyObject;
-import pl.krol.springtrainer.objects.SingleCurrencyParameters;
+import pl.krol.springtrainer.objects.*;
 
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -24,6 +22,7 @@ import java.util.List;
 public class ApiRestClient {
     private final String GENERIC_EXCHANGE_RATE_API_ADDRESS = "http://api.nbp.pl/api/exchangerates/rates/";
     private final String ALL_CURRENCIES_TABLE_API_ADDRESS = "http://api.nbp.pl/api/exchangerates/tables/A/";
+    private final String ALL_UNEXCHANGEABLE_CURRENCIES_TABLE_API_ADDRESS = "http://api.nbp.pl/api/exchangerates/tables/B/";
     private RestClient restClient = RestClient.create();
     private Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
         @Override
@@ -36,7 +35,7 @@ public class ApiRestClient {
         return generateURI(params);
     }
 
-    public ATableCurrencyObject getAnyCurrencyDataReturnATable(String currencyCode) {
+    public ATableTableObject getAnyCurrencyDataReturnATable(String currencyCode) {
         return restClient.get()
                 .uri(URI.create(GENERIC_EXCHANGE_RATE_API_ADDRESS + "A/" + currencyCode + "/"))
                 .accept(MediaType.APPLICATION_JSON)
@@ -44,10 +43,10 @@ public class ApiRestClient {
                 .onStatus(HttpStatusCode::isError, (request, response) -> {
                     throw new ApiRestCallException(response);
                 })
-                .body(ATableCurrencyObject.class);
+                .body(ATableTableObject.class);
     }
 
-    public ATableCurrencyObject getAnyCurrencyOnSpecificDateReturnATable(String currencyCode, LocalDate date) {
+    public ATableTableObject getAnyCurrencyOnSpecificDateReturnATable(String currencyCode, LocalDate date) {
         return restClient.get()
                 .uri(URI.create(GENERIC_EXCHANGE_RATE_API_ADDRESS + "A/" + currencyCode + "/" + date + "/"))
                 .accept(MediaType.APPLICATION_JSON)
@@ -55,26 +54,35 @@ public class ApiRestClient {
                 .onStatus(HttpStatusCode::isError, (request, response) -> {
                     throw new ApiRestCallException(response);
                 })
-                .body(ATableCurrencyObject.class);
+                .body(ATableTableObject.class);
     }
 
-    public ATableCurrencyObject alternativeRestCallWithBuilderParameter(SingleCurrencyParameters param) throws UnallowedFieldValueException, IllegalAccessException {
-        URI uri = generateURI(param);
-        System.out.println(uri);
-        return null;
-//        return restClient.get()
-//                .uri(generateURI(param))
-//                .accept(MediaType.APPLICATION_JSON)
-//                .retrieve()
-//                .onStatus(HttpStatusCode::isError, (request, response) -> {
-//                    throw new ApiRestCallException(response);
-//                })
-//                .body(ATableCurrencyObject.class);
+    public ATableTableObject alternativeRestCallWithBuilderParameter(SingleCurrencyParameters param) throws UnallowedFieldValueException, IllegalAccessException {
+        return restClient.get()
+                .uri(generateURI(param))
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (request, response) -> {
+                    throw new ApiRestCallException(response);
+                })
+                .body(ATableTableObject.class);
     }
 
-    public List<ATableAllCurrenciesObject> getAllCurrenciesDataReturnATable() {
+    public List<AandBTableTablesObject> getAllCurrenciesDataReturnATable() {
         String jsonResponse = restClient.get()
                 .uri(ALL_CURRENCIES_TABLE_API_ADDRESS)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, ((request, response) -> {
+                    throw new ApiRestCallException(response);
+                }))
+                .body(String.class);
+        return gson.fromJson(jsonResponse, new TypeToken<>() {});
+    }
+
+    public List<AandBTableTablesObject> getAllCurrenciesDataReturnBTable() {
+        String jsonResponse = restClient.get()
+                .uri(ALL_UNEXCHANGEABLE_CURRENCIES_TABLE_API_ADDRESS)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, ((request, response) -> {
@@ -100,10 +108,10 @@ public class ApiRestClient {
             return URI.create(uri.toString());
         }
         if(param.getStartDate() != null) {
-            uri.append(param.getStartDate().toString()).append("/");
+            uri.append(param.getStartDate()).append("/");
         }
-        if(param.getStartDate() != null) {
-            uri.append(param.getStartDate().toString()).append("/");
+        if(param.getEndDate() != null) {
+            uri.append(param.getEndDate()).append("/");
         }
         return URI.create(uri.toString());
     }
