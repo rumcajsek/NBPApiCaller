@@ -16,22 +16,13 @@ public class ValueValidator {
         for (Field field : object.getClass().getDeclaredFields()) {
             if(field.isAnnotationPresent(AllowedValues.class)) {
                 field.setAccessible(true);
-                String[] allowedValues = field.getAnnotation(AllowedValues.class).values();
+                List<String> allowedValues = Arrays.stream(field.getAnnotation(AllowedValues.class).values()).toList();
                 Object value = field.get(object);
                 if(value == null && !field.isAnnotationPresent(Nullable.class)) {
                     throw new UnallowedNullFieldException(field.getName());
                 }
                 else if(value != null) {
-                    boolean valid = false;
-                    for (String allowedValue : allowedValues) {
-                        if (allowedValue.equals(value.toString())) {
-                            valid = true;
-                            break;
-                        }
-                    }
-                    if (!valid) {
-                        throw new UnallowedFieldValueException(field.getName());
-                    }
+                    validFields(allowedValues, field, value);
                 }
             }
             if(field.isAnnotationPresent(CurrencyCode.class)) {
@@ -43,17 +34,17 @@ public class ValueValidator {
                 if(code == null) {
                     throw new UnallowedNullFieldException(field.getName());
                 }
-                boolean valid = false;
-                for(String currencyCode : validCodes) {
-                    if(currencyCode.equals(code.toString())) {
-                        valid = true;
-                        break;
-                    }
-                }
-                if(!valid) {
-                    throw new UnallowedFieldValueException(field.getName());
-                }
+                validFields(validCodes, field, code);
             }
         }
+    }
+
+    private static void validFields(List<String> fields, Field currentField, Object comparison) throws UnallowedFieldValueException {
+        for(String field : fields) {
+            if(field.equals(comparison.toString())) {
+                return;
+            }
+        }
+        throw new UnallowedFieldValueException(currentField.getName());
     }
 }

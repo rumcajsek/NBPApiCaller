@@ -32,7 +32,7 @@ public class ApiRestClient {
     }).create();
 
     public URI glueURIparams(SingleCurrencyParameters params) throws UnallowedFieldValueException, IllegalAccessException {
-        return generateURI(params);
+        return generateExchangeRateURI(params);
     }
 
     public ATableTableObject getAnyCurrencyDataReturnATable(String currencyCode) {
@@ -59,7 +59,7 @@ public class ApiRestClient {
 
     public ATableTableObject alternativeRestCallWithBuilderParameter(SingleCurrencyParameters param) throws UnallowedFieldValueException, IllegalAccessException {
         return restClient.get()
-                .uri(generateURI(param))
+                .uri(generateExchangeRateURI(param))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (request, response) -> {
@@ -92,7 +92,7 @@ public class ApiRestClient {
         return gson.fromJson(jsonResponse, new TypeToken<>() {});
     }
 
-    private URI generateURI(SingleCurrencyParameters param) throws UnallowedFieldValueException, IllegalAccessException {
+    private URI generateExchangeRateURI(SingleCurrencyParameters param) throws UnallowedFieldValueException, IllegalAccessException {
         ValueValidator.validate(param);
         StringBuilder uri = new StringBuilder(GENERIC_EXCHANGE_RATE_API_ADDRESS);
         uri.append(param.getTable()).append("/");
